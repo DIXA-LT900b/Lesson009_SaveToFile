@@ -1,15 +1,11 @@
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
-
 
 public class FileSaver {
 
@@ -18,7 +14,7 @@ public class FileSaver {
     }
     public static void saveToFile(GameProgress progress) {
 
-        File file = new File(Main.SAVEGAME_PATH + fileNaming());
+        File file = new File(Main.SAVEGAME_PATH + File.separator + fileNaming());
 
         if (!file.exists()) {
             try {
@@ -32,41 +28,39 @@ public class FileSaver {
         }
     }
 
+    public static List<String> getFilesInDirectory(String directory){
+         File fileName = new File(directory);
+         File[] fileList = fileName.listFiles();
+         List<String> allSavedFiles = Arrays
+                .stream(fileList)
+                .map(File::getAbsolutePath)
+                .toList();
+         return allSavedFiles;
+    }
     public static void zipFiles(){
 
-        List<String> allSavedFiles = new ArrayList<>();
+     List<String> filesToZip = getFilesInDirectory(String.valueOf(Main.SAVEGAME_PATH));
 
         try {
-            Files.list(Paths.get(String.valueOf(Main.SAVEGAME_PATH))).forEach(path -> Coll);
-            System.out.println(allSavedFiles);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+            ZipOutputStream zipFileStream = new ZipOutputStream(new FileOutputStream(String.valueOf(Main.ZIP_PATH)));
 
+            for (String fileToZip : filesToZip){
 
-        //File zipFile = new File(Main.ZIP_PATH);
-        try {
-            ZipFile zipFile = new ZipFile(Main.ZIP_PATH);
-            ZipOutputStream zipFileStream = new ZipOutputStream(new FileOutputStream(String.valueOf(zipFile)));
-
-            for (String fileToZip : allSavedFiles){
-                System.out.println(fileToZip);
+                ZipEntry zipEntry = new ZipEntry(String.valueOf(Path.of(fileToZip).getFileName()));
                 FileInputStream inputStream = new FileInputStream(fileToZip);
-                ZipEntry zipEntry = new ZipEntry(fileToZip);
                 zipFileStream.putNextEntry(zipEntry);
 
                 byte[] buffer = new byte[inputStream.available()];
                 inputStream.read(buffer);
 
                 zipFileStream.write(buffer);
-
                 zipFileStream.closeEntry();
+                inputStream.close();
             }
-
-            zipFileStream.close();
+            zipFileStream.finish();
 
         } catch (IOException e) {
-            System.out.println(e.getMessage());;
+            e.printStackTrace();
         }
     }
 }
