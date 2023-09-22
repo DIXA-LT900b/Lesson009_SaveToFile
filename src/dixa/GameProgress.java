@@ -1,5 +1,5 @@
-import java.io.File;
-import java.io.IOException;
+package dixa;
+
 import java.io.Serializable;
 
 public class GameProgress implements Serializable {
